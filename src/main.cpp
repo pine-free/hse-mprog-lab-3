@@ -38,6 +38,8 @@ public:
     while (res == 0) {
       res = get_num(r0 + offset++, r1);
       if (res == 0) {
+        // 2 is basically a magic constant figured out through trial and error here.
+        // This prevents the generator devolving into zeroes... Hopefully
         res = r0 - 2;
       }
     }
