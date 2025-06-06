@@ -1,8 +1,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <stdexcept>
 #include <set>
+#include <stdexcept>
 
 #define quit_if(condition)                                                     \
   if (condition) {                                                             \
@@ -56,7 +56,8 @@ class ShuffleSquare : public Generator {
   uint32_t get_num() {
     uint32_t r0_left = (r0 << 8) | (r0 >> 24);
     uint32_t r0_right = ((r0 >> 8) | ((r0 & 0xffff) << 24));
-    // This is kind of a hack (with the typing), but it works, so I guess no harm no foul
+    // This is kind of a hack (with the typing), but it works, so I guess no
+    // harm no foul
     uint64_t res = std::pow((r0_left + r0_right) % UINT32_MAX, 2);
     return res;
   }
@@ -69,13 +70,32 @@ public:
     r0 = res;
     return res;
   }
-  
 };
 
 /// Модификация линейного конгруентного метода. Добавляем ещё одно слагаемое,
 /// формула принимает вид r_{i + 1} = (l * r_i^2 + k * r_i + b) mod M,
 /// где M выбирается вместе с k
-class SquareCongruentGenerator : public Generator {};
+class SquareCongruentGenerator : public Generator {
+  uint32_t r0, l, k, b, m;
+
+  uint32_t get_num() {
+    uint64_t res = (l * std::pow(r0, 2) + k * r0 + b);
+    res %= m;
+
+    return res;
+  }
+
+public:
+  SquareCongruentGenerator(uint32_t r0, uint32_t l, uint32_t k, uint32_t b,
+                           uint32_t m)
+      : r0(r0), l(l), k(k), b(b), m(m) {}
+
+    uint32_t generate() {
+      uint32_t res = get_num();
+      r0 = res;
+      return res;
+    }
+};
 
 template <class G> void test_generator(G generator, int count) {
   std::set<uint32_t> vals = {};
@@ -85,7 +105,7 @@ template <class G> void test_generator(G generator, int count) {
     std::cout << res << std::endl;
 
     if (vals.contains(res) && vals_before_repeat < 0) {
-      vals_before_repeat = i+1;
+      vals_before_repeat = i + 1;
     }
 
     vals.insert(res);
@@ -129,7 +149,11 @@ int main(int argc, char *argv[]) {
     auto gen = ShuffleSquare(r0);
     test_generator(gen, gen_count);
   } else {
-    auto gen = SquareCongruentGenerator();
+    quit_if(argc != 8);
+    uint32_t r0 = std::atoi(argv[3]), l = std::atoi(argv[4]),
+             k = std::atoi(argv[5]), b = std::atoi(argv[6]),
+             m = std::atoi(argv[7]);
+    auto gen = SquareCongruentGenerator(r0, l, k, b, m);
     test_generator(gen, gen_count);
   }
 }
