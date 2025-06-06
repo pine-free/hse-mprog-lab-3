@@ -1,8 +1,8 @@
-#include <climits>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+#include <set>
 
 #define quit_if(condition)                                                     \
   if (condition) {                                                             \
@@ -38,8 +38,8 @@ public:
     while (res == 0) {
       res = get_num(r0 + offset++, r1);
       if (res == 0) {
-        // 2 is basically a magic constant figured out through trial and error here.
-        // This prevents the generator devolving into zeroes... Hopefully
+        // 2 is basically a magic constant figured out through trial and error
+        // here. This prevents the generator devolving into zeroes... Hopefully
         res = r0 - 2;
       }
     }
@@ -59,12 +59,25 @@ class ShuffleSquare : public Generator {};
 class SquareCongruentGenerator : public Generator {};
 
 template <class G> void test_generator(G generator, int count) {
+  std::set<uint32_t> vals = {};
+  int vals_before_repeat = -1;
   for (int i = 0; i < count; ++i) {
     auto res = generator.generate();
     std::cout << res << std::endl;
+
+    if (vals.contains(res) && vals_before_repeat < 0) {
+      vals_before_repeat = i+1;
+    }
+
+    vals.insert(res);
     if (res == 0) {
+      std::cout << i << " iterations before collapsing\n";
       break;
     }
+  }
+
+  if (vals_before_repeat != -1) {
+    std::cout << vals_before_repeat << " iterations before repeat\n";
   }
 }
 
