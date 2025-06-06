@@ -13,8 +13,8 @@ run_gen() {
 
 if [ $GEN_TYPE == 0 ]; then
   run_gen $GEN0_ARGS[@];
-elif [ $GEN_TYPE == 1 ]; then
-  run_gen;
 elif [ $GEN_TYPE == 2 ]; then
   run_gen $GEN3_ARGS;
+else
+  run_gen
 fi
