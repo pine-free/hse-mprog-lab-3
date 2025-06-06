@@ -2,17 +2,17 @@ import statistics
 import math
 import os
 import itertools
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 import csv
 import shutil
 from contextlib import suppress
 
 @dataclass
 class Sample:
-    file: str = field(init=True)
-    _data: list[int] | None = None
+    file: InitVar[str]
+    data: list[int] = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self, file):
         with open(file) as f:
             data = f.read()
 
@@ -38,13 +38,14 @@ class Sample:
 
     def chi_sq(self) -> float:
         k = int(math.log2(self.size))
-        max_val = max(self._data)
-        normalized = sorted([n / max_val for n in self._data])
+        max_val = 0xffffffff
+        # normalized = sorted([n / max_val for n in self._data])
+        normalized = sorted(self._data)
 
         chunks = []
-        for key, g in itertools.groupby(normalized, key=lambda x: x // (1/k)):
+        for key, g in itertools.groupby(normalized, key=lambda x: x // (max_val/k)):
             c = list(g)
-            print(f"{key=} {len(c)=}")
+            # print(f"{key=} {len(c)=} {c[:5]=}")
             chunks.append(c)
 
         chi_vals = []

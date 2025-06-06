@@ -11,8 +11,9 @@ with open(target, 'w') as f:
     for sample_f in sorted(os.listdir(SAMPLES_DIR)):
         file = os.path.join(SAMPLES_DIR, sample_f)
         sample = Sample(file=file)
+        # print(f"{sample._data[:5]=}")
 
-        print(f"{file=}")
+        # print(f"{file=}")
         writer.writerow({'file': sample_f, 'chi_sq': sample.chi_sq()})
 
 

@@ -14,7 +14,6 @@ for gen_num in {0..2}
 do
   for seed in $SEEDS
   do
-      if [ $gen_num == 1 ]; then set -x; else set +x; fi
       destination="samples/gen-$gen_num-$seed-$SAMPLE_SIZE.txt"
       res=$(./gen.sh $gen_num $SAMPLE_SIZE $seed)
       if echo $res | grep -q "iterations"; then
