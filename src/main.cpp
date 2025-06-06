@@ -51,7 +51,26 @@ public:
 
 /// Модификация метода перемешивания. Вместо суммы чисел, будем брать квадрат
 /// суммы
-class ShuffleSquare : public Generator {};
+class ShuffleSquare : public Generator {
+  uint32_t r0;
+  uint32_t get_num() {
+    uint32_t r0_left = (r0 << 8) | (r0 >> 24);
+    uint32_t r0_right = ((r0 >> 8) | ((r0 & 0xffff) << 24));
+    // This is kind of a hack (with the typing), but it works, so I guess no harm no foul
+    uint64_t res = std::pow((r0_left + r0_right) % UINT32_MAX, 2);
+    return res;
+  }
+
+public:
+  ShuffleSquare(uint32_t r0) : r0(r0) {}
+
+  uint32_t generate() {
+    uint32_t res = get_num();
+    r0 = res;
+    return res;
+  }
+  
+};
 
 /// Модификация линейного конгруентного метода. Добавляем ещё одно слагаемое,
 /// формула принимает вид r_{i + 1} = (l * r_i^2 + k * r_i + b) mod M,
@@ -105,7 +124,9 @@ int main(int argc, char *argv[]) {
     auto gen = MiddleMulSquare(r0, r1);
     test_generator(gen, gen_count);
   } else if (gen_num == 1) {
-    auto gen = ShuffleSquare();
+    quit_if(argc != 4);
+    uint32_t r0 = std::atoi(argv[3]);
+    auto gen = ShuffleSquare(r0);
     test_generator(gen, gen_count);
   } else {
     auto gen = SquareCongruentGenerator();
