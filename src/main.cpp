@@ -75,21 +75,27 @@ public:
   }
 };
 
-/// Модификация линейного конгруентного метода. Добавляем ещё одно слагаемое,
-/// формула принимает вид r_{i + 1} = (l * r_i^2 + k * r_i + b) mod M,
+/// Модификация линейного конгруентного метода. "Вращаем" каждый элемент на l бит,
+/// формула принимает вид r_{i + 1} = (k * r_i + b) mod M,
 /// где M выбирается вместе с k
-class SquareCongruentGenerator : public Generator {
+class ShiftCongruentGenerator : public Generator {
   uint32_t r0, l, k, b, m;
 
+  uint32_t rotate_left(uint32_t num, uint32_t offset) {
+    offset = offset % 32;
+    uint64_t res = (num << offset) | (num >> (32 - offset));
+    return res % 0xffffffff;
+  }
+
   uint32_t get_num() {
-    uint64_t res = (l * std::pow(r0, 2) + k * r0 + b);
+    uint64_t res = rotate_left(k * r0 + b, l);
     res %= m;
 
     return res;
   }
 
 public:
-  SquareCongruentGenerator(uint32_t r0, uint32_t l, uint32_t k, uint32_t b,
+  ShiftCongruentGenerator(uint32_t r0, uint32_t l, uint32_t k, uint32_t b,
                            uint32_t m)
       : r0(r0), l(l), k(k), b(b), m(m) {}
 
@@ -124,7 +130,7 @@ template <class G> void test_generator(G generator, int count) {
   if (vals_before_repeat != -1) {
     std::cout << vals_before_repeat << " iterations before repeat\n";
   }
-  std::cout << ms_double << std::endl;
+  // std::cout << ms_double << std::endl;
 }
 
 class StdGenerator : public Generator {
@@ -175,7 +181,7 @@ int main(int argc, char *argv[]) {
     uint32_t r0 = std::atoi(argv[3]), l = std::atoi(argv[4]),
              k = std::atoi(argv[5]), b = std::atoi(argv[6]),
              m = std::atoi(argv[7]);
-    auto gen = SquareCongruentGenerator(r0, l, k, b, m);
+    auto gen = ShiftCongruentGenerator(r0, l, k, b, m);
     test_generator(gen, gen_count);
   } else if (gen_num == 3) {
     auto gen = StdGenerator();
