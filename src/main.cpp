@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <ratio>
 #include <set>
 #include <stdexcept>
@@ -92,11 +93,11 @@ public:
                            uint32_t m)
       : r0(r0), l(l), k(k), b(b), m(m) {}
 
-    uint32_t generate() {
-      uint32_t res = get_num();
-      r0 = res;
-      return res;
-    }
+  uint32_t generate() {
+    uint32_t res = get_num();
+    r0 = res;
+    return res;
+  }
 };
 
 template <class G> void test_generator(G generator, int count) {
@@ -105,7 +106,7 @@ template <class G> void test_generator(G generator, int count) {
   auto t1 = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < count; ++i) {
     auto res = generator.generate();
-    // std::cout << res << std::endl;
+    std::cout << res << std::endl;
 
     if (vals.contains(res) && vals_before_repeat < 0) {
       vals_before_repeat = i + 1;
@@ -126,12 +127,27 @@ template <class G> void test_generator(G generator, int count) {
   std::cout << ms_double << std::endl;
 }
 
+class StdGenerator : public Generator {
+  std::default_random_engine e;
+  std::uniform_int_distribution<int> uniform_dist;
+
+public:
+  StdGenerator() {
+    std::random_device r;
+    e = std::default_random_engine(r());
+    uniform_dist = std::uniform_int_distribution<int>(1, 1000000);
+  }
+
+  uint32_t generate() { return uniform_dist(e); }
+};
+
 void print_usage(char *argv[]) {
   std::cout << "USAGE: " << argv[0] << " GENERATOR COUNT <OPTIONS>\n";
   std::cout << "GENERATOR options:\n"
             << "0 - middle multiply square\n"
             << "1 - shuffle square\n"
-            << "2 - square congruent generator\n";
+            << "2 - square congruent generator\n"
+            << "3 - std default generator";
   std::cout << "OPTIONS are specific seeds for the generator\n";
 }
 
@@ -154,12 +170,15 @@ int main(int argc, char *argv[]) {
     uint32_t r0 = std::atoi(argv[3]);
     auto gen = ShuffleSquare(r0);
     test_generator(gen, gen_count);
-  } else {
+  } else if (gen_num == 2) {
     quit_if(argc != 8);
     uint32_t r0 = std::atoi(argv[3]), l = std::atoi(argv[4]),
              k = std::atoi(argv[5]), b = std::atoi(argv[6]),
              m = std::atoi(argv[7]);
     auto gen = SquareCongruentGenerator(r0, l, k, b, m);
+    test_generator(gen, gen_count);
+  } else if (gen_num == 3) {
+    auto gen = StdGenerator();
     test_generator(gen, gen_count);
   }
 }
