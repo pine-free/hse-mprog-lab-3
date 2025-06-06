@@ -1,6 +1,8 @@
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <ratio>
 #include <set>
 #include <stdexcept>
 
@@ -100,9 +102,10 @@ public:
 template <class G> void test_generator(G generator, int count) {
   std::set<uint32_t> vals = {};
   int vals_before_repeat = -1;
+  auto t1 = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < count; ++i) {
     auto res = generator.generate();
-    std::cout << res << std::endl;
+    // std::cout << res << std::endl;
 
     if (vals.contains(res) && vals_before_repeat < 0) {
       vals_before_repeat = i + 1;
@@ -114,10 +117,13 @@ template <class G> void test_generator(G generator, int count) {
       break;
     }
   }
+  auto t2 = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 
   if (vals_before_repeat != -1) {
     std::cout << vals_before_repeat << " iterations before repeat\n";
   }
+  std::cout << ms_double << std::endl;
 }
 
 void print_usage(char *argv[]) {
