@@ -39,11 +39,10 @@ class Sample:
     def chi_sq(self) -> float:
         k = int(math.log2(self.size))
         max_val = 0xffffffff
-        # normalized = sorted([n / max_val for n in self._data])
-        normalized = sorted(self._data)
+        normalized = sorted([n / max_val for n in self._data])
 
         chunks = []
-        for key, g in itertools.groupby(normalized, key=lambda x: x // (max_val/k)):
+        for key, g in itertools.groupby(normalized, key=lambda x: x // (1/k)):
             c = list(g)
             # print(f"{key=} {len(c)=} {c[:5]=}")
             chunks.append(c)
@@ -53,10 +52,10 @@ class Sample:
         for chunk in chunks:
             n_i = len(chunk)
             p_i = 1/k
-            res = n_i ** 2 / p_i - self.size
+            res = (n_i - p_i * self.size) ** 2 / (p_i * self.size)
             chi_vals.append(res)
 
-        chi_val = sum(chi_vals) / self.size
+        chi_val = sum(chi_vals)
         return chi_val
 
 
